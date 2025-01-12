@@ -1,0 +1,312 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcam Capture</title>
+  <link rel="stylesheet" href="style.css"></link>
+  <style type="text/css" id="operaUserStyle"></style>
+</head>
+<body>
+  <article class="hud-block">
+    <button id="hud-button">HUD</button>
+    <section id="hud">
+      <h1 style="text-align: center;">Webcam Image Capture</h1>
+      <div class="hud-video">
+        <video id="video" autoplay="" playsinline="" width="320" height="240"></video>
+        <canvas id="canvas" width="320" height="240"></canvas>
+      </div>
+      <div class="hud-settings">
+        <div class="hud-settings-catpure-interval">
+          <label for="capture-interval">Capture interval: <span id="interval-value"></span></label>
+          <input type="range"
+                 id="capture-interval"
+                 min="5"
+                 max="60"
+                 step="1"
+                 value="30"
+          />
+        </div>
+      </div>
+      <div class="error-text-block" id="error-text-block">
+        <p id="error-text"></p>
+      </div>
+    </section>
+  </article>
+
+  <article class="emotions">
+    <section class="emotions-top-block">
+      <div id="top-items" class="items top-items"></div>
+    </section>
+    <section class="emotions-middle-block">
+      <section class="emotions-middle-left-block">
+        <div id="left-items" class="items left-items"></div>
+      </section>
+      <section class="emotions-middle-middle-block">
+        <svg id="smiley" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="500" height="500">
+          <circle cx="50" cy="50" r="48" fill="transparent" stroke="var(--smile)" stroke-width="4" />
+
+          <circle id="left-eye" cx="35" cy="40" r="5" fill="var(--smile)" />
+          <circle id="right-eye" cx="65" cy="40" r="5" fill="var(--smile)" />
+          <path id="mouth" d="M30 60 Q50 80 70 60" fill="none" stroke="var(--smile)" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      </section>
+      <section class="emotions-middle-right-block">
+        <div id="right-items" class="items right-items"></div>
+      </section>
+    </section>
+    <section class="emotions-bottom-block">
+      <div id="bottom-items" class="items bottom-items"></div>
+    </section>
+  </article>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const context = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+        init();
+      })
+      .catch((error) => {
+        console.error('Error accessing webcam:', error);
+        init(false);
+        setError({ "error": "Webcam is not allowed.", detail: "" });
+      });
+
+    const ITEMS_COUNT = 6;
+    let currentEmotion = "neutral";
+    let captureInterval = 30;
+
+    function setTheme(emotion) {
+      const body = document.body;
+      body.classList = `${emotion}-theme`;
+    }
+
+    function setEmotion(emotion) {
+      console.log(emotion);
+      currentEmotion = emotion;
+
+      setTheme(emotion);
+
+      drawEmotion(emotion);
+
+      fillBlocks();
+    }
+    function drawEmotion(emotion) {
+      const leftEye = document.getElementById("left-eye");
+      const rightEye = document.getElementById("right-eye");
+      const mouth = document.getElementById("mouth");
+
+      switch (emotion) {
+        case 'angry':
+          mouth.setAttribute("d", "M30 65 Q50 50 70 65");
+          leftEye.setAttribute("cx", "35");
+          leftEye.setAttribute("cy", "37");
+          leftEye.setAttribute("r", "8");
+          rightEye.setAttribute("cx", "65");
+          rightEye.setAttribute("cy", "37");
+          rightEye.setAttribute("r", "8");
+          break;
+
+        case 'disgust':
+          mouth.setAttribute("d", "M30 75 Q50 55 70 75");
+          leftEye.setAttribute("cx", "35");
+          leftEye.setAttribute("cy", "38");
+          rightEye.setAttribute("cx", "65");
+          rightEye.setAttribute("cy", "38");
+          leftEye.setAttribute("r", "5");
+          rightEye.setAttribute("r", "5");
+          break;
+
+        case 'fear':
+          mouth.setAttribute("d", "M40 70 Q50 50 60 70");
+          leftEye.setAttribute("cx", "30");
+          leftEye.setAttribute("cy", "40");
+          rightEye.setAttribute("cx", "70");
+          rightEye.setAttribute("cy", "40");
+          leftEye.setAttribute("r", "8");
+          rightEye.setAttribute("r", "8");
+          break;
+
+        case 'happy':
+          mouth.setAttribute("d", "M30 60 Q50 80 70 60");
+          leftEye.setAttribute("cy", "40");
+          rightEye.setAttribute("cy", "40");
+          leftEye.setAttribute("r", "6");
+          rightEye.setAttribute("r", "6");
+          break;
+
+        case 'sad':
+          mouth.setAttribute("d", "M30 70 Q50 50 70 70");
+          leftEye.setAttribute("cy", "40");
+          rightEye.setAttribute("cy", "40");
+          leftEye.setAttribute("r", "5");
+          rightEye.setAttribute("r", "5");
+          break;
+
+        case 'surprise':
+          mouth.setAttribute("d", "M30 65 Q50 85 70 65");
+          leftEye.setAttribute("r", "6");
+          rightEye.setAttribute("r", "6");
+          break;
+
+        case 'neutral':
+          mouth.setAttribute("d", "M30 65 Q50 65 70 65");
+          leftEye.setAttribute("cx", "35");
+          leftEye.setAttribute("cy", "40");
+          rightEye.setAttribute("cx", "65");
+          rightEye.setAttribute("cy", "40");
+          leftEye.setAttribute("r", "6");
+          rightEye.setAttribute("r", "6");
+          break;
+      }
+    }
+    function fillOneBlock(nodeId, text, side) {
+      const emotion = currentEmotion;
+
+      const blockNode = document.getElementById(nodeId);
+
+      if (!blockNode) return;
+
+      const items = blockNode.querySelectorAll('.item');
+      items.forEach(item => {
+        item.classList.add(`removing-${side}`);
+        item.addEventListener('animationend', () => {
+          item.remove();
+        });
+      });
+
+      setTimeout(() => {
+        //blockNode.innerText = "";
+        for (i = 0; i < ITEMS_COUNT; i++) {
+          const newItem = document.createElement("div");
+          newItem.classList.add("item", `adding-${side}`);
+          const textNode = document.createElement("span");
+          textNode.innerText = text;
+
+          newItem.appendChild(textNode);
+          blockNode.appendChild(newItem);
+        }
+      }, 550)
+    }
+    function fillBlocks() {
+      fillOneBlock("top-items", `Goods when you ${currentEmotion}`, "top");
+      fillOneBlock("left-items", `Feed for ${currentEmotion} people`, "left");
+      fillOneBlock("right-items", `${currentEmotion} videos`, "right");
+      fillOneBlock("bottom-items", `${currentEmotion} music`, "bottom");
+    }
+
+
+    const setError = (e) => {
+      const errorTextBlockNode = document.getElementById("error-text-block");
+      const errorTextNode = document.getElementById("error-text");
+      errorTextNode.innerText = `${e.error}: ${e.detail}`;
+      errorTextBlockNode.style.display = "block";
+
+    }
+    const clearError = () => {
+      const errorTextBlockNode = document.getElementById("error-text-block");
+      const errorTextNode = document.getElementById("error-text");
+      errorTextNode.innerText = "";
+      errorTextBlockNode.style.display = "none";
+    }
+    let recognizedEmotions = null;
+
+    function recognizeEmotions() {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL('image/png');
+
+      fetch('http://127.0.0.1:8001/recognize/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ base64Image: imageData })
+        }
+      )
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(error => {
+              throw error;
+            });
+          };
+          return response.json()
+        })
+        .then(data => {
+          clearError();
+
+          recognizedEmotions = data.message[0].emotion;
+
+          const mainEmotion = data.message[0].dominant_emotion;
+          setEmotion(mainEmotion);
+        })
+        .catch(e => {
+          setError(e);
+        })
+    }
+
+
+    let analyzeUserIntervalId = null;
+    function analyzeUser(interval) {
+      analyzeUserIntervalId = setInterval(recognizeEmotions, interval * 1 * 1000);
+    }
+
+    function initToggleHud() {
+      const button = document.getElementById("hud-button");
+
+      const hud = document.getElementById("hud");
+      button.addEventListener("click", () => {
+        if (!hud.style.display || hud.style.display === "none") {
+          hud.style.display = "flex";
+          setTimeout(() => {
+            hud.style.opacity = 1;
+          }, 1);
+        } else {
+          hud.style.opacity = 0;
+          setTimeout(() => {
+            hud.style.display = "none";
+          }, 500);
+        }
+      });
+    }
+
+    function hudSetinterval() {
+      const captureIntervalNode = document.getElementById('capture-interval');
+      const captureIntervalLabelNode = document.getElementById('interval-value');
+
+      let currentValue = captureInterval;
+      captureIntervalLabelNode.textContent = `${currentValue} seconds`;
+
+
+      captureIntervalNode.addEventListener('input', (event) => {
+        currentValue = event.target.value;
+
+        captureInterval = currentValue;
+
+        captureIntervalLabelNode.textContent = `${currentValue} seconds`;
+
+        if (analyzeUserIntervalId) {
+          clearInterval(analyzeUserIntervalId);
+          analyzeUser(captureInterval);
+        }
+      });
+    }
+
+    function init(withWebcam = true) {
+      hudSetinterval();
+      initToggleHud();
+      setEmotion("neutral");
+      if (withWebcam) {
+        analyzeUser(captureInterval);
+      }
+    }
+  </script>
+
+
+</body>
+</html>
