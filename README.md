@@ -1,11 +1,13 @@
-﻿EmotionalUI
-EmotionalUI — це інноваційний проєкт, який використовує вебкамеру для аналізу емоцій користувача та адаптації інтерфейсу відповідно до його настрою.
+﻿# EmotionalUI
 
-📖 Опис
-Мета проєкту — зробити взаємодію з сайтом більш персоналізованою та емоційно чутливою.
-Алгоритм зчитує вираз обличчя користувача, визначає його емоцію (радість, сум, злість тощо) і автоматично підлаштовує контент та оформлення сайту для створення комфортного досвіду.
+**EmotionalUI** is an innovative project that uses a webcam to analyze the user's emotions and adapt the interface based on their mood.
 
-🚀 Особливості
-🎥 Зчитування емоцій через вебкамеру (радість, сум, злість, нейтральний стан тощо).
-🎨 Динамічна зміна дизайну інтерфейсу залежно від емоції.
-🧠 Використання сучасних алгоритмів комп'ютерного зору та аналізу емоцій.
+## 📖 Description
+
+The goal of the project is to make website interaction more personalized and emotionally responsive. The algorithm reads the user's facial expressions, detects their emotions (joy, sadness, anger, etc.), and automatically adjusts the website's content and design to create a comfortable experience.
+
+## 🚀 Features
+
+- 🎥 **Emotion detection via webcam**: joy, sadness, anger, neutral state, and more.
+- 🎨 **Dynamic interface design adaptation** based on detected emotions.
+- 🧠 **Integration of modern algorithms** for computer vision and emotion analysis.
